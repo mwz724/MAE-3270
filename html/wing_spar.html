@@ -1,0 +1,229 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>wing_spar</title><meta name="generator" content="MATLAB 9.10"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2021-12-07"><meta name="DC.source" content="wing_spar.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Specify loads and constraints</a></li><li><a href="#3">Material Properties - enter these from material selected on CES</a></li><li><a href="#4">Section properties - Replace with your own design</a></li><li><a href="#5">Stress and displacement</a></li><li><a href="#6">Check Safety Factors</a></li><li><a href="#7">Wrap up</a></li></ul></div><pre class="codeinput"><span class="comment">%---  Wing Spar for a Human Powered Aircraft  ---</span>
+<span class="comment">% MAE 3270 - Fall 2021</span>
+<span class="comment">% Teammates: Michelle Zhou, George Abbott</span>
+<span class="comment">%------------------------------------------------</span>
+
+clear; clc; close <span class="string">all</span>
+</pre><h2 id="2">Specify loads and constraints</h2><pre class="codeinput">Ua = 3;    <span class="comment">% [m] Maximum allowable deflection</span>
+Xf = 1.4;  <span class="comment">% minimum safety factor for strength</span>
+Xb = 2.;   <span class="comment">% minimum safety factor for local buckling</span>
+L = 15;    <span class="comment">% [m] wing length</span>
+w = 32;    <span class="comment">% [N/m] wing loading</span>
+g = 9.8;   <span class="comment">% [m/s^2] acceleration of gravity</span>
+</pre><h2 id="3">Material Properties - enter these from material selected on CES</h2><pre class="codeinput">rho = 2851.03;              <span class="comment">% REPLACE [kg/m^3] density</span>
+E = 72.4*10^9;              <span class="comment">% REPLACE [Pa] Young's modulus</span>
+nu = 0.34;                  <span class="comment">% REPLACE Poisson's ratio</span>
+sf = 0.6895*10^9;           <span class="comment">% REPLACE [Pa] tensile strength</span>
+cost = 4.4;                 <span class="comment">% REPLACE [USD/kg] cost</span>
+name = <span class="string">'Aluminum 7068 T6511'</span>; <span class="comment">% REPLACE write in material name</span>
+</pre><h2 id="4">Section properties - Replace with your own design</h2><p>example below assumes hollow circular section</p><pre class="codeinput">r0 = 0.07;           <span class="comment">% REPLACE [m] outer radius</span>
+ri = 0.05;           <span class="comment">% REPLACE [m] inner radius</span>
+
+t = r0-ri;              <span class="comment">% [m] tube thickness</span>
+A = pi*(r0^2-ri^2);     <span class="comment">% cross sectional ares</span>
+I = pi*(r0^4-ri^4)/4;   <span class="comment">% moment of inertia</span>
+
+r = (ri+r0)/2;    <span class="comment">% average radius [m]</span>
+Mbuckle =  (0.7*E*r*t^2)/sqrt(1-nu^2);    <span class="comment">% REPLACE bending moment that will result in local buckling</span>
+mass = rho*L*A;
+</pre><h2 id="5">Stress and displacement</h2><pre class="codeinput">V = L*A; <span class="comment">% volume</span>
+
+<span class="comment">% M1 = rho*g*V*(L/2) - (w*L^2)/2        % moment in the middle</span>
+<span class="comment">% M2 = rho*g*V*(3*L/2) - w*L^2          % moment at the wing tip</span>
+
+Mmax = rho*g*V*(L/2) - (w*L^2)/2;        <span class="comment">% REPLACE max bending moment in the wing spar</span>
+smax = Mmax*r0/I; <span class="comment">% max bending stress</span>
+
+
+fprintf(<span class="string">'Max bending stress = %4.2f MPa \n'</span>, smax*1.e-6 )
+
+umax = (1/(E*I))*(rho*g*V*(L/2)-w*L)*(L^2)/2;  <span class="comment">% REPLACE max deflection oddurs at wing tip</span>
+fprintf(<span class="string">'Tip Deflection = %4.2f meters \n'</span>, umax )
+</pre><pre class="codeoutput">Max bending stress = 100.87 MPa 
+Tip Deflection = 2.59 meters 
+</pre><h2 id="6">Check Safety Factors</h2><pre class="codeinput">X = sf/smax;   <span class="comment">% REPLACE strength safety factor</span>
+XB = Mbuckle/Mmax; <span class="comment">% REPLACE buckling safety factor</span>
+
+fprintf(<span class="string">'\nStrength Safety Factor = %4.2f, Buckling Safety Factor = %4.2f \n'</span>, X, XB)
+<span class="keyword">if</span> X &gt; Xf
+    fprintf(<span class="string">'PASS STRENGTH REQUIREMENT\n'</span>)
+<span class="keyword">else</span>
+    fprintf(<span class="string">'FAIL STRENGTH REQUIREMENT\n'</span>)
+<span class="keyword">end</span>
+<span class="keyword">if</span> XB &gt; Xb
+    fprintf(<span class="string">'PASS BUCKLING REQUIREMENT\n'</span>)
+<span class="keyword">else</span>
+    fprintf(<span class="string">'FAIL BUCKLING REQUIREMENT\n'</span>)
+<span class="keyword">end</span>
+<span class="keyword">if</span> umax &lt; Ua
+    fprintf(<span class="string">'PASS DEFLECTION REQUIREMENT\n'</span>)
+<span class="keyword">else</span>
+    fprintf(<span class="string">'FAIL DEFLECTION REQUIREMENT\n'</span>)
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">
+Strength Safety Factor = 6.84, Buckling Safety Factor = 64.35 
+PASS STRENGTH REQUIREMENT
+PASS BUCKLING REQUIREMENT
+PASS DEFLECTION REQUIREMENT
+</pre><h2 id="7">Wrap up</h2><pre class="codeinput">fprintf(<span class="string">'\nMaterial used is %s \n'</span>, name)
+fprintf(<span class="string">'Mass = %4.1f kg \n'</span>, mass)
+fprintf(<span class="string">'Material Cost = $ %4.0f  \n'</span>, cost*mass)
+</pre><pre class="codeoutput">
+Material used is Aluminum 7068 T6511 
+Mass = 322.4 kg 
+Material Cost = $ 1419  
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2021a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%REPLACE_WITH_DASH_DASH-  Wing Spar for a Human Powered Aircraft  REPLACE_WITH_DASH_DASH-
+% MAE 3270 - Fall 2021
+% Teammates: Michelle Zhou, George Abbott
+%REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+
+clear; clc; close all
+
+%% Specify loads and constraints
+
+Ua = 3;    % [m] Maximum allowable deflection
+Xf = 1.4;  % minimum safety factor for strength
+Xb = 2.;   % minimum safety factor for local buckling
+L = 15;    % [m] wing length
+w = 32;    % [N/m] wing loading
+g = 9.8;   % [m/s^2] acceleration of gravity
+
+%% Material Properties - enter these from material selected on CES
+
+rho = 2851.03;              % REPLACE [kg/m^3] density
+E = 72.4*10^9;              % REPLACE [Pa] Young's modulus
+nu = 0.34;                  % REPLACE Poisson's ratio
+sf = 0.6895*10^9;           % REPLACE [Pa] tensile strength
+cost = 4.4;                 % REPLACE [USD/kg] cost
+name = 'Aluminum 7068 T6511'; % REPLACE write in material name
+
+%% Section properties - Replace with your own design
+% example below assumes hollow circular section
+
+r0 = 0.07;           % REPLACE [m] outer radius
+ri = 0.05;           % REPLACE [m] inner radius
+
+t = r0-ri;              % [m] tube thickness
+A = pi*(r0^2-ri^2);     % cross sectional ares
+I = pi*(r0^4-ri^4)/4;   % moment of inertia
+
+r = (ri+r0)/2;    % average radius [m]
+Mbuckle =  (0.7*E*r*t^2)/sqrt(1-nu^2);    % REPLACE bending moment that will result in local buckling 
+mass = rho*L*A;
+
+%% Stress and displacement
+
+V = L*A; % volume
+
+% M1 = rho*g*V*(L/2) - (w*L^2)/2        % moment in the middle
+% M2 = rho*g*V*(3*L/2) - w*L^2          % moment at the wing tip
+
+Mmax = rho*g*V*(L/2) - (w*L^2)/2;        % REPLACE max bending moment in the wing spar
+smax = Mmax*r0/I; % max bending stress
+
+
+fprintf('Max bending stress = %4.2f MPa \n', smax*1.e-6 )
+
+umax = (1/(E*I))*(rho*g*V*(L/2)-w*L)*(L^2)/2;  % REPLACE max deflection oddurs at wing tip
+fprintf('Tip Deflection = %4.2f meters \n', umax )
+
+%% Check Safety Factors
+
+X = sf/smax;   % REPLACE strength safety factor
+XB = Mbuckle/Mmax; % REPLACE buckling safety factor
+
+fprintf('\nStrength Safety Factor = %4.2f, Buckling Safety Factor = %4.2f \n', X, XB)
+if X > Xf
+    fprintf('PASS STRENGTH REQUIREMENT\n')
+else
+    fprintf('FAIL STRENGTH REQUIREMENT\n')
+end
+if XB > Xb
+    fprintf('PASS BUCKLING REQUIREMENT\n')
+else
+    fprintf('FAIL BUCKLING REQUIREMENT\n')
+end
+if umax < Ua
+    fprintf('PASS DEFLECTION REQUIREMENT\n')
+else
+    fprintf('FAIL DEFLECTION REQUIREMENT\n')
+end
+    
+%% Wrap up
+
+fprintf('\nMaterial used is %s \n', name)
+fprintf('Mass = %4.1f kg \n', mass)
+fprintf('Material Cost = $ %4.0f  \n', cost*mass)
+##### SOURCE END #####
+--></body></html>
